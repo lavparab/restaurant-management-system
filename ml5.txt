@@ -1,0 +1,6 @@
+!pip install ydata-profiling
+
+from ydata_profiling import ProfileReport
+
+profile=ProfileReport(df,title="Wine Quality EDA Report",explorative=True)
+profile.to_file("wine_quality_eda_report.html")

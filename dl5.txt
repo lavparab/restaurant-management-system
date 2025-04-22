@@ -1,0 +1,62 @@
+import numpy as np
+from tensorflow.keras.datasets import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+
+(X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=10000)
+
+# Simulate 'neutral' class: map some 0 and 1 labels to 2 randomly
+for i in range(len(y_train)):
+    if np.random.rand() < 0.2:
+        y_train[i] = 2  # Neutral
+for i in range(len(y_test)):
+    if np.random.rand() < 0.2:
+        y_test[i] = 2  # Neutral
+
+X_train = pad_sequences(X_train, maxlen=200)
+X_test = pad_sequences(X_test, maxlen=200)
+
+#Convert labels to categorical
+from tensorflow.keras.utils import to_categorical
+y_train_cat = to_categorical(y_train, num_classes=3)
+y_test_cat = to_categorical(y_test, num_classes=3)
+
+model = Sequential([
+    Embedding(input_dim=10000, output_dim=64, input_length=200),
+    LSTM(64),
+    Dense(32, activation='relu'),
+    Dense(3, activation='softmax')  # 3 output classes
+])
+
+# Compile model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy']) 
+
+# Train model
+model.fit(X_train, y_train_cat, epochs=3, batch_size=64, validation_split=0.2)
+
+# Evaluate
+loss, acc = model.evaluate(X_test, y_test_cat)
+print("Test Accuracy:", acc)
+
+print("Actual Review: ",{y_test[322]})
+
+sample_review = X_test[322]
+sample_review = np.expand_dims(sample_review, axis=0)
+
+# Predict
+prediction = model.predict(sample_review)
+prob = prediction[0][0]
+
+# Determine sentiment based on thresholds
+if prob < 0.4:
+    sentiment = "Negative"
+elif prob > 0.6:
+    sentiment = "Positive"
+else:
+    sentiment = "Neutral"
+
+print("Predicted Sentiment:", sentiment)
+print("Predicted Probability:", prob)

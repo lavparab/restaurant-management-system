@@ -1,0 +1,39 @@
+import tensorflow as tf
+ from tensorflow import keras
+ from tensorflow.keras import models, layers, Sequential
+ from tensorflow.keras.utils import to_categorical
+ import matplotlib.pyplot as plt
+ %matplotlib inline
+ import numpy as np
+
+ (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+
+ X_train = X_train/225
+ X_test = X_test/225
+
+ y_train = to_categorical(y_train,10)
+ y_test = to_categorical(y_test,10)
+
+  model = Sequential([
+ layers.Flatten(input_shape=(28,28)),
+ layers.Dense(128,activation='relu'),
+ layers.Dense(64,activation='relu'),
+ layers.Dense(10,activation='softmax')
+ ])
+
+ model.compile(
+ optimizer='adam',
+ loss='categorical_crossentropy',
+ metrics=['accuracy']
+ )
+
+ 
+model.fit(X_train,y_train,epochs=5,batch_size=64)
+
+accracy = model.evaluate(X_test,y_test)[1]
+
+plt.matshow(X_test[7])
+
+y_pred=model.predict(X_test)
+
+np.argmax(y_pred[7])
